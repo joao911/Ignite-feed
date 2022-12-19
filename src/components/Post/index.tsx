@@ -1,49 +1,128 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Avatar from "../Avatar";
 import CommentList from "../CommentList";
+import { format, formatDistanceToNow } from "date-fns";
+import ptBR from "date-fns/locale/pt-BR";
+import { filter, map } from "lodash";
+import { v4 as uuidv4 } from "uuid";
 
-// import { Container } from './styles';
+interface IPost {
+  author: {
+    avatarUrl: string;
+    name: string;
+    role: string;
+  };
+  content: {
+    type: string;
+    content: string;
+  }[];
 
-const Post: React.FC = () => {
+  publishAta: Date;
+}
+
+export interface ICommentsProps {
+  comment: string;
+  date: string;
+  id: string;
+}
+
+interface IPostProps {
+  item: IPost;
+}
+
+const Post: React.FC<IPostProps> = ({ item }) => {
+  const [comments, setComments] = useState<ICommentsProps[]>([]);
+  const [newComments, setNewComments] = useState("");
+
+  const publishAtFormatted = format(
+    item.publishAta,
+    "d 'de' LLLL 'ás' HH:mm'h'",
+    {
+      locale: ptBR,
+    }
+  );
+
+  const publishedDateRelativeToNow = formatDistanceToNow(item.publishAta, {
+    locale: ptBR,
+    addSuffix: true,
+  });
+
+  const handleChange = (event: any) => {
+    setNewComments(event.target.value);
+  };
+
+  const handleCreateNewComment = (e: any) => {
+    e.preventDefault();
+    setComments([
+      ...comments,
+      {
+        id: uuidv4(),
+        date: new Date().toJSON(),
+        comment: newComments,
+      },
+    ]);
+    setNewComments("");
+  };
+
+  const handleRemove = (id: string) => {
+    setComments(filter(comments, (item) => item.id !== id));
+  };
+
+  useEffect(() => {
+    console.log("comments: ", comments);
+  }, [comments]);
+
   return (
     <article className="bg-gray-800 p-10 w-full rounded-md">
       <header>
         <div className="flex justify-between">
           <div className="flex">
-            <Avatar useBorder={true} />
+            <Avatar useBorder={true} image={item.author.avatarUrl} />
 
             <div className="flex pl-4 flex-col">
-              <p className="font-bold mt-3">João Paulo </p>
-              <p className="text-gray-500 mt-3">Dev front end</p>
+              <p className="font-bold mt-3">{item.author.name}</p>
+              <p className="text-gray-500 mt-3">{item.author.role}</p>
             </div>
           </div>
           <div className="mt-2">
             <time
-              title="19 de novembro as 10:36"
-              dateTime="2022-11-19 10:36:30"
+              title={publishAtFormatted}
+              dateTime={item.publishAta.toISOString()}
               className="text-gray-500"
             >
-              Publicado á uma hora
+              {publishedDateRelativeToNow}
             </time>
           </div>
         </div>
       </header>
       <div className="mt-6">
         <p className="mb-6">Fala galera</p>
-        <p className="mb-6">
-          Acabei de subir mais um projeto no meu portifa, É um projeto que fiz
-          pra aprimorar meus conhecimentos em tailwind css{" "}
-        </p>
-        <p className="mb-6 text-green-500 font-bold hover:text-green-300">
-          <a href="#">joao911/fundamentos</a>{" "}
-        </p>
+        {map(item.content, (item, index) =>
+          item.type === "paragraph" ? (
+            <p className="mb-6" key={index}>
+              {item.content}
+            </p>
+          ) : (
+            <p className="mb-6 text-green-500 font-bold hover:text-green-300">
+              <a href="#">{item.content}</a>{" "}
+            </p>
+          )
+        )}
+
         <p className="mb-6 text-green-500 font-bold hover:text-green-300">
           <a href="#">#NovoProjeto </a>{" "}
         </p>
       </div>
-      <form className="w-full mt-[1.5rem] pt-[1.5rem] border-t-2 border-gray-600">
+      <form
+        onSubmit={handleCreateNewComment}
+        className="w-full mt-[1.5rem] pt-[1.5rem] border-t-2 border-gray-600"
+      >
         <strong className="leading-6 text-gray-100">Deixe seu feedback</strong>
-        <textarea className="w-full bg-gray-900 border-none resize-none h-24 p-4 rounded-md text-gray-100 leading-5 mt-4" />
+        <textarea
+          value={newComments}
+          onChange={handleChange}
+          className="w-full bg-gray-900 border-none resize-none h-24 p-4 rounded-md text-gray-100 leading-5 mt-4"
+        />
         <footer>
           <button
             className="py-[1rem] px-4 mt-4 rounded-lg border-none bg-green-500 text-white font-bold cursor-pointer hover:bg-green-300 duration-100"
@@ -54,12 +133,9 @@ const Post: React.FC = () => {
         </footer>
       </form>
       <div className="mt-7 flex flex-col gap-6">
-        <CommentList />
-        <CommentList />
-
-        <CommentList />
-
-        <CommentList />
+        {map(comments, (item, index) => (
+          <CommentList key={index} comments={item} />
+        ))}
       </div>
     </article>
   );
