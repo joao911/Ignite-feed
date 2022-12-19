@@ -4,12 +4,13 @@ import React from "react";
 interface IAvatar {
   useBorder?: boolean;
   isComments?: boolean;
+  image?: string
 }
 
-const Avatar: React.FC<IAvatar> = ({ useBorder, isComments = false }) => {
+const Avatar: React.FC<IAvatar> = ({ useBorder, isComments = false, image = 'https://github.com/joao911.png' }) => {
   return (
     <img
-      src="https://github.com/joao911.png"
+      src={image}
       alt=""
       className={`rounded ${
         isComments

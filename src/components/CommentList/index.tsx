@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Trash, ThumbsUp } from "phosphor-react";
 import Avatar from "../Avatar";
+import { ICommentsProps } from "../Post";
 
-const CommentList: React.FC = () => {
+interface ICommentListProps {
+  comments: ICommentsProps;
+}
+
+const CommentList: React.FC<ICommentListProps> = ({ comments }) => {
   return (
     <div className="flex gap-4">
       <Avatar isComments={true} useBorder={false} />
@@ -23,7 +28,7 @@ const CommentList: React.FC = () => {
               <Trash size={24} />
             </button>
           </div>
-          <p className="mt-5">Muito bom João Paulo Parabéns</p>
+          <p className="mt-5">{comments.comment}</p>
         </div>
         <footer className="mt-4 flex">
           <button className="flex text-gray-400 hover:text-green-300">
