@@ -3,7 +3,7 @@ import Avatar from "../Avatar";
 import CommentList from "../CommentList";
 import { format, formatDistanceToNow } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
-import { filter, map } from "lodash";
+import { filter, map, size } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 
 interface IPost {
@@ -103,7 +103,10 @@ const Post: React.FC<IPostProps> = ({ item }) => {
               {item.content}
             </p>
           ) : (
-            <p className="mb-6 text-green-500 font-bold hover:text-green-300">
+            <p
+              className="mb-6 text-green-500 font-bold hover:text-green-300"
+              key={index}
+            >
               <a href="#">{item.content}</a>{" "}
             </p>
           )
@@ -125,8 +128,15 @@ const Post: React.FC<IPostProps> = ({ item }) => {
         />
         <footer>
           <button
-            className="py-[1rem] px-4 mt-4 rounded-lg border-none bg-green-500 text-white font-bold cursor-pointer hover:bg-green-300 duration-100"
+            className={`py-[1rem] px-4 mt-4 rounded-lg border-none text-white font-bold cursor-pointer  duration-100 ${
+              !!size(newComments) ? "bg-green-500" : "bg-gray-400"
+            } ${
+              !!size(newComments)
+                ? "hover: hover:bg-green-300"
+                : "hover:bg-gray-400"
+            }`}
             type="submit"
+            disabled={!size(newComments)}
           >
             Publicar
           </button>
@@ -134,7 +144,11 @@ const Post: React.FC<IPostProps> = ({ item }) => {
       </form>
       <div className="mt-7 flex flex-col gap-6">
         {map(comments, (item, index) => (
-          <CommentList key={index} comments={item} />
+          <CommentList
+            key={index}
+            comments={item}
+            handleRemove={handleRemove}
+          />
         ))}
       </div>
     </article>
